@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API REST</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+  <script src="index.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>API REST</h1>
+    <p>Práctica de consumo de recursos a través de endpoints. Métodos GET, POST, PUT y DELETE.</p>
+    <p>Utilizamos el backend de prueba de <a href="https://mockapi.io" target="_blank">MockAPI</a></p>
+  </header>
+  <button id="open-modal">Open Modal</button>
+  <dialog id="modal">
+    <form action="" method="dialog" id="form">
+      <label for="fullName">Nombre completo
+        <input type="text" id="fullName" name="fullName" required>
+      </label>
+      <label for="email">Correo Electrónico
+        <input type="email" id="email" name="email" required>
+      </label>
+      <label for="phone">Teléfono
+        <input type="tel" id="phone" name="phone" required pattern="^(?:(?:00)?549?)?0?(?:11|[2368]\d)(?:(?=\d{0,2}15)\d{2})??\d{8}$">
+      </label>
+      <input type="submit" value="Aceptar">
+      <input type="reset" value="Limpiar">
+      <input type="button" value="Cancelar" id="close-modal">
+    </form>
+  </dialog>
+  <div id="user-list"></div>
+
+  <script>
+    const form = document.getElementById("form");
+    const userList = document.getElementById("user-list");
+
+    form.addEventListener("submit", handleSubmit);
+    const openModal = document.getElementById("open-modal");
+    const modal = document.getElementById("modal");
+    const closeModal = document.getElementById("close-modal");
+
+    closeModal.addEventListener("click", () => {
+      modal.close();
+    });
+
+    openModal.addEventListener("click", () => {
+      modal.showModal();
+    });
+
+    const BASE_URL = "https://647bdcaec0bae2880ad048d1.mockapi.io/users";
+
+    // Obtener todos los usuarios
+    function getAllUsers() {
+      fetch(BASE_URL)
+        .then(res => res.json())
+        .then(data => displayUsers(data))
+        .catch(err => console.error(err));
+    }
+
+    // Mostrar los usuarios en las columnas
+    function displayUsers(users) {
+      userList.innerHTML = ""; // Limpiar la lista de usuarios
+
+      users.forEach(user => {
+        const row = document.createElement("div");
+        row.classList.add("row");
+
+        const nameColumn = document.createElement("div");
+        nameColumn.classList.add("column");
+        nameColumn.textContent = user.name;
+        row.appendChild(nameColumn);
+
+        const emailColumn = document.createElement("div");
+        emailColumn.classList.add("column");
+        emailColumn.textContent = user.email;
+        row.appendChild(emailColumn);
+
+        const phoneColumn = document.createElement("div");
+        phoneColumn.classList.add("column");
+        phoneColumn.textContent = user.phone;
+        row.appendChild(phoneColumn);
+
+        userList.appendChild(row);
+      });
+    }
+
+    // Agregar un nuevo usuario
+    function addUser(user) {
+      fetch(BASE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+      })
+        .then(res => res.json())
+        .then(() => {
+          modal.close();
+          getAllUsers();
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Manejar el envío del formulario
+    function handleSubmit(event) {
+      event.preventDefault();
+
+      const user = {
+        name: form.fullName.value,
+        email: form.email.value,
+        phone: form.phone.value,
+      };
+
+      addUser(user);
+    }
+
+    // Obtener todos los usuarios al cargar la página
+    getAllUsers();
+  </script>
+</body>
+</html>
